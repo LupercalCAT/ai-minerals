@@ -1,7 +1,7 @@
 {
     "docket": "251100233",
     "applicant": "Kerr-McGee Oil & Gas Onshore LP",
-    "type": "SPACING",
+    "status": "SPACING",
     "date_filed": "11/17/2025",
     "formations": [
         "Niobrara",
