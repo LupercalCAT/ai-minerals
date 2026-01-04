@@ -1,77 +1,137 @@
 import streamlit as st
 import pandas as pd
 import json
+import os
 
 # --- CONFIGURATION ---
-st.set_page_config(page_title="AI Minerals - Title Chain", layout="wide", page_icon="🪨")
-VALID_TOKENS = ["investor", "demo", "admin"] # ?access=investor
+st.set_page_config(page_title="Spacing App Dashboard", layout="wide", page_icon="🛢️")
 
-# --- 1. SECURITY (Magic Link) ---
-params = st.query_params
-user_token = params.get("access", "").lower()
-
-if user_token not in VALID_TOKENS:
-    st.error("⛔ Access Denied.")
-    st.info("Please use the secure link provided to you.")
-    
-    # Optional Manual Entry for lost links
-    token_input = st.text_input("Enter Access Token:", type="password")
-    if token_input.lower() in VALID_TOKENS:
-        st.query_params["access"] = token_input.lower()
-        st.rerun()
-    st.stop()
-
-# --- 2. HEADER ---
-st.title("🪨 AI Minerals | Title Chain Engine")
-st.markdown(f"**Status:** Connected | **User:** {user_token.upper()}")
-
-# --- 3. DATA INGESTION (Drag & Drop) ---
-st.sidebar.header("📁 Load Data")
-uploaded_file = st.sidebar.file_uploader("Upload Parcel JSON", type=["json"])
-
-if uploaded_file is None:
-    st.info("👈 Upload a JSON file to visualize the title chain.")
-    # Show dummy data example if nothing uploaded
-    data = [
-        {"parcel": "Example-Sec25", "desc": "S/2 NE/4", "type": "ROYALTY (ORRI)", "nra": 16.0, "status": "Active"},
-        {"parcel": "Example-Sec25", "desc": "Deep Rights", "type": "WORKING INT", "nra": 0.0, "status": "Excluded"}
-    ]
-else:
+# --- DATA LOADING FUNCTIONS ---
+@st.cache_data
+def load_data():
+    """
+    Loads the application metadata and dynamic party files.
+    """
+    # 1. Load Application Metadata
     try:
-        data = json.load(uploaded_file)
-        # Handle if your JSON is nested (adjust key if needed)
-        if isinstance(data, dict) and "parcels" in data:
-            data = data["parcels"]
-    except Exception as e:
-        st.error(f"Error reading JSON: {e}")
+        with open('application.json', 'r') as f:
+            app_meta = json.load(f)
+    except FileNotFoundError:
+        st.error("⚠️ Critical Error: 'application.json' not found.")
         st.stop()
 
-# --- 4. DASHBOARD LOGIC ---
-df = pd.DataFrame(data)
+    # 2. Load Parties
+    # In a production app, you might use os.listdir() to find all 'party_*.json' files
+    # For this specific setup, we map the known files.
+    parties_map = {}
+    
+    # We define the specific filenames corresponding to our split
+    file_mapping = {
+        "Nieblas Stabel Trust": "party_nieblas.json",
+        "Alan Watada": "party_watada.json"
+    }
 
-# Summary Metrics
-col1, col2, col3 = st.columns(3)
-if not df.empty and 'nra' in df.columns:
-    royalty_df = df[df['type'].astype(str).str.contains('ROYALTY', case=False, na=False)]
-    total_nra = royalty_df['nra'].sum()
-    col1.metric("Net Royalty Acres (NRA)", f"{total_nra:.2f} ac")
-    col2.metric("Parcels Tracked", len(df))
-    col3.metric("Data Source", "AI Analysis")
+    for party_name in app_meta.get('parties', []):
+        filename = file_mapping.get(party_name)
+        if filename and os.path.exists(filename):
+            with open(filename, 'r') as f:
+                parties_map[party_name] = json.load(f)
+        else:
+            # Fallback if a file is missing
+            parties_map[party_name] = {
+                "search_name": party_name,
+                "status_in_unit": "Data Pending",
+                "narrative": "File not found.",
+                "total_confirmed_net_mineral_acres": 0,
+                "addresses": [],
+                "consolidated_parcels": [],
+                "consolidated_parcels_outside_area": []
+            }
+            
+    return app_meta, parties_map
+
+# Load the data
+APP_METADATA, PARTIES_DATA = load_data()
+
+# --- DASHBOARD LAYOUT ---
+
+# 1. HEADER SECTION
+st.title("📑 Spacing Application Dashboard")
+st.markdown(f"**Docket No:** `{APP_METADATA.get('docket', 'N/A')}` | **Applicant:** {APP_METADATA.get('applicant', 'Unknown')}")
+
+with st.expander("Show Application Lands & Details", expanded=False):
+    c1, c2 = st.columns(2)
+    with c1:
+        st.subheader("Target Formations")
+        st.write(", ".join(APP_METADATA.get('formations', [])))
+        st.subheader("Location")
+        st.info(APP_METADATA.get('location_desc', ''))
+    with c2:
+        st.subheader("Sections Involved")
+        for s in APP_METADATA.get('sections', []):
+            st.code(s, language="text")
 
 st.divider()
 
-# Visualization
-st.subheader("Asset Breakdown")
-if not df.empty:
-    # Color coding function
-    def highlight_type(row):
-        color = '#d4edda' if 'ROYALTY' in str(row.get('type', '')).upper() else '#f8d7da'
-        return [f'background-color: {color}' for _ in row]
+# 2. INTERESTED PARTIES SECTION
+st.subheader("👥 Interested Parties Analysis")
 
-    st.dataframe(
-        df.style.apply(highlight_type, axis=1),
-        use_container_width=True,
-        hide_index=True
-    )
-else:
-    st.warning("JSON loaded but contained no parcel data rows.")
+# Layout: List on Left (1/3), Details on Right (2/3)
+col_list, col_details = st.columns([1, 2])
+
+with col_list:
+    st.write("Select a party to view mineral ownership:")
+    
+    # Get list from the loaded JSON
+    party_names = APP_METADATA.get('parties', [])
+    
+    if party_names:
+        selected_party_name = st.radio("Parties Identified", party_names, index=0)
+        # Quick stats
+        st.info(f"Total Parties Tracked: {len(party_names)}")
+    else:
+        st.warning("No parties listed in application.json")
+        st.stop()
+
+with col_details:
+    # Get data for selected party
+    party = PARTIES_DATA.get(selected_party_name, {})
+    
+    # Header for the Detail View
+    st.markdown(f"### 👤 {party.get('search_name', selected_party_name)}")
+    
+    # Top Metrics for the Party
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Net Mineral Acres (In Unit)", f"{party.get('total_confirmed_net_mineral_acres', 0)} NMA")
+    m2.metric("Status", party.get('status_in_unit', 'Unknown'))
+    m3.metric("Addresses Found", len(party.get('addresses', [])))
+
+    # Tabs for Organization
+    tab1, tab2, tab3 = st.tabs(["📄 Narrative", "📍 Parcels (In Unit)", "🗺️ Parcels (Outside Unit)"])
+
+    with tab1:
+        st.markdown("**Executive Summary:**")
+        st.write(party.get('narrative', 'No narrative available.'))
+        
+        addresses = party.get('addresses', [])
+        if addresses:
+            st.markdown("**Mailing Addresses:**")
+            for addr in addresses:
+                st.code(addr, language="text")
+
+    with tab2:
+        st.success(f"**Holdings Inside Spacing Unit ({APP_METADATA.get('docket')})**")
+        parcels_in = party.get('consolidated_parcels', [])
+        if parcels_in:
+            df_in = pd.DataFrame(parcels_in)
+            st.dataframe(
+                df_in,
+                column_config={
+                    "parcel": "Parcel ID",
+                    "description": "Legal Description",
+                    "net_mineral_acres": st.column_config.NumberColumn("NMA", format="%.4f"),
+                    "grantor": "Grantor"
+                },
+                use_container_width=True,
+                hide_index=True
+            )

@@ -1,0 +1,27 @@
+{
+    "docket": "251100233",
+    "applicant": "Kerr-McGee Oil & Gas Onshore LP",
+    "type": "SPACING",
+    "date_filed": "11/17/2025",
+    "formations": [
+        "Niobrara",
+        "Fort Hays",
+        "Codell",
+        "Carlile",
+        "Sharon Springs"
+    ],
+    "total_acres": "2,680 (Approx)",
+    "location_desc": "T1N-R66W & T1N-R67W",
+    "sections": [
+        "T1N-R67W Sec 25: All",
+        "T1N-R66W Sec 18: All",
+        "T1N-R66W Sec 19: All",
+        "T1N-R66W Sec 20: W1/2 W1/2 SW1/4",
+        "T1N-R66W Sec 29: W1/2 W1/2 W1/2",
+        "T1N-R66W Sec 30: All"
+    ],
+    "parties": [
+        "Nieblas Stabel Trust",
+        "Alan Watada"
+    ]
+}

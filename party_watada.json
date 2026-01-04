@@ -1,0 +1,27 @@
+{
+    "search_name": "Watada, Alan",
+    "total_confirmed_net_mineral_acres": 0.6753,
+    "status_in_unit": "Small Interest Owner",
+    "narrative": "Alan Watada holds mineral interests both within and outside the specified drilling area. Within the drilling area, he owns 0.6753 net mineral acres, representing a 1/3 undivided interest in the NW4SE4 of Section 19, Township 1 North, Range 66 West, conveyed from the Estate of Albert Tadashi Watada.",
+    "addresses": [],
+    "consolidated_parcels": [
+        {
+            "parcel": "T1N-R66W-S19-NW4SE4",
+            "description": "NW4SE4 of Section 19",
+            "net_mineral_acres": 0.6753,
+            "grantor": "Estate of Albert Tadashi Watada"
+        }
+    ],
+    "consolidated_parcels_outside_area": [
+        {
+            "parcel": "T1N-R66W-S20-W2NW4NW4",
+            "description": "W1/2NW1/4NW1/4 (1/6 Int)",
+            "net_mineral_acres": 3.33
+        },
+        {
+            "parcel": "T1N-R66W-S20-W2NW4NW4",
+            "description": "W1/2NW1/4NW1/4 (1/3 Int)",
+            "net_mineral_acres": 6.67
+        }
+    ]
+}

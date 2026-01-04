@@ -1,0 +1,29 @@
+{
+    "search_name": "Nieblas Stabel Trust",
+    "total_confirmed_net_mineral_acres": 320.0,
+    "status_in_unit": "High Interest Owner",
+    "narrative": "The Nieblas Stabel Trust holds mineral and royalty interests. Within the target drilling area (T11N-R64W: S10, S15, S22), the Trust owns 320 net mineral acres in the E1/2 of Section 22. This interest was acquired from Marilynn M. Stabel via a Quit Claim Mineral Deed dated November 12, 2021. The Trust has leased its mineral rights to Contex Energy Company LLC and retains a 19% royalty interest.",
+    "addresses": [
+        "14234 W. Parkland Dr., Sun City West, AZ 85375"
+    ],
+    "consolidated_parcels": [
+        {
+            "parcel": "T11N-R64W-S22-E2",
+            "description": "E1/2 of Section 22",
+            "net_mineral_acres": 320.0,
+            "grantor": "Marilynn M. Stabel"
+        }
+    ],
+    "consolidated_parcels_outside_area": [
+        {
+            "parcel": "T11N-R64W-S27-E2",
+            "description": "E1/2 of Section 27",
+            "net_mineral_acres": 320.0
+        },
+        {
+            "parcel": "T11N-R64W-S33-All",
+            "description": "All of Section 33",
+            "net_mineral_acres": 640.0
+        }
+    ]
+}
